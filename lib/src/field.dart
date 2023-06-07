@@ -132,56 +132,48 @@ class DateTimeField extends StatelessWidget {
       }
     }
 
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      final DateTime? _selectedDateTime =
-          await showCupertinoPicker(context, initialDateTime);
-      if (_selectedDateTime != null) {
-        onDateSelected!(_selectedDateTime);
+    DateTime _selectedDateTime = initialDateTime;
+
+    const List<DateTimeFieldPickerMode> modesWithDate =
+        <DateTimeFieldPickerMode>[
+      DateTimeFieldPickerMode.dateAndTime,
+      DateTimeFieldPickerMode.date
+    ];
+
+    if (modesWithDate.contains(mode)) {
+      final DateTime? _selectedDate =
+          await showMaterialDatePicker(context, initialDateTime);
+
+      if (_selectedDate != null) {
+        _selectedDateTime = _selectedDate;
+      } else {
+        return;
       }
-    } else {
-      DateTime _selectedDateTime = initialDateTime;
-
-      const List<DateTimeFieldPickerMode> modesWithDate =
-          <DateTimeFieldPickerMode>[
-        DateTimeFieldPickerMode.dateAndTime,
-        DateTimeFieldPickerMode.date
-      ];
-
-      if (modesWithDate.contains(mode)) {
-        final DateTime? _selectedDate =
-            await showMaterialDatePicker(context, initialDateTime);
-
-        if (_selectedDate != null) {
-          _selectedDateTime = _selectedDate;
-        } else {
-          return;
-        }
-      }
-
-      final List<DateTimeFieldPickerMode> modesWithTime =
-          <DateTimeFieldPickerMode>[
-        DateTimeFieldPickerMode.dateAndTime,
-        DateTimeFieldPickerMode.time
-      ];
-
-      if (modesWithTime.contains(mode)) {
-        final TimeOfDay? _selectedTime = await showMaterialTimePicker(
-            context, initialDateTime,
-            initialEntryMode: initialTimePickerEntryMode);
-
-        if (_selectedTime != null) {
-          _selectedDateTime = DateTime(
-            _selectedDateTime.year,
-            _selectedDateTime.month,
-            _selectedDateTime.day,
-            _selectedTime.hour,
-            _selectedTime.minute,
-          );
-        }
-      }
-
-      onDateSelected!(_selectedDateTime);
     }
+
+    final List<DateTimeFieldPickerMode> modesWithTime =
+        <DateTimeFieldPickerMode>[
+      DateTimeFieldPickerMode.dateAndTime,
+      DateTimeFieldPickerMode.time
+    ];
+
+    if (modesWithTime.contains(mode)) {
+      final TimeOfDay? _selectedTime = await showMaterialTimePicker(
+          context, initialDateTime,
+          initialEntryMode: initialTimePickerEntryMode);
+
+      if (_selectedTime != null) {
+        _selectedDateTime = DateTime(
+          _selectedDateTime.year,
+          _selectedDateTime.month,
+          _selectedDateTime.day,
+          _selectedTime.hour,
+          _selectedTime.minute,
+        );
+      }
+    }
+
+    onDateSelected!(_selectedDateTime);
   }
 
   /// Launches the Material time picker by invoking [showTimePicker].
@@ -218,32 +210,6 @@ class DateTimeField extends StatelessWidget {
       firstDate: firstDate,
       lastDate: lastDate,
     );
-  }
-
-  /// Launches the [CupertinoDatePicker] within a [showModalBottomSheet].
-  /// Can be @[override]n to allow further customization of the picker options
-  Future<DateTime?> showCupertinoPicker(
-    BuildContext context,
-    DateTime initialDateTime,
-  ) async {
-    DateTime? pickedDate;
-    await showModalBottomSheet<DateTime?>(
-      context: context,
-      builder: (BuildContext builder) {
-        return SizedBox(
-          height: kCupertinoDatePickerHeight,
-          child: CupertinoDatePicker(
-            mode: cupertinoModeFromPickerMode(mode),
-            onDateTimeChanged: (DateTime dt) => pickedDate = dt,
-            initialDateTime: initialDateTime,
-            minimumDate: firstDate,
-            maximumDate: lastDate,
-            use24hFormat: use24hFormat,
-          ),
-        );
-      },
-    );
-    return pickedDate;
   }
 
   @override
